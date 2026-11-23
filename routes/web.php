@@ -16,9 +16,11 @@ use App\Http\Controllers\Admin\TechItemController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\InquiryController;
 use App\Http\Controllers\ProjectController;
+use App\Http\Controllers\SitemapController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', [HomeController::class, 'index'])->name('home');
+Route::get('/sitemap.xml', SitemapController::class)->name('sitemap');
 Route::get('/portofolio', [ProjectController::class, 'index'])->name('portfolio.index');
 Route::get('/proyek/{slug}/preview', [ProjectController::class, 'preview'])->name('projects.preview');
 Route::get('/proyek/{slug}', [ProjectController::class, 'show'])->name('projects.show');

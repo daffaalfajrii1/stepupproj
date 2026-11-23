@@ -3,8 +3,30 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>@yield('title', $site['meta_title'] ?? 'StepUp Project')</title>
-    <meta name="description" content="@yield('description', $site['meta_description'] ?? '')">
+    @php
+        $pageTitle = trim($__env->yieldContent('title', $site['meta_title'] ?? 'StepUp Project'));
+        $pageDescription = trim($__env->yieldContent('description', $site['meta_description'] ?? ''));
+        $pageRobots = trim($__env->yieldContent('robots', 'index, follow'));
+        $pageCanonical = trim($__env->yieldContent('canonical', url()->current()));
+        $shareImage = trim($__env->yieldContent('og_image', \App\Support\Media::url($site['logo'] ?? null) ?? ''));
+    @endphp
+    <title>{{ $pageTitle }}</title>
+    <meta name="description" content="{{ $pageDescription }}">
+    <meta name="robots" content="{{ $pageRobots }}">
+    <link rel="canonical" href="{{ $pageCanonical }}">
+    <meta property="og:locale" content="id_ID">
+    <meta property="og:type" content="@yield('og_type', 'website')">
+    <meta property="og:site_name" content="{{ $site['site_name'] ?? 'StepUp' }}">
+    <meta property="og:title" content="{{ $pageTitle }}">
+    <meta property="og:description" content="{{ $pageDescription }}">
+    <meta property="og:url" content="{{ $pageCanonical }}">
+    @if ($shareImage !== '')
+        <meta property="og:image" content="{{ $shareImage }}">
+        <meta name="twitter:image" content="{{ $shareImage }}">
+    @endif
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="{{ $pageTitle }}">
+    <meta name="twitter:description" content="{{ $pageDescription }}">
     <meta name="theme-color" content="#000000">
     <link rel="icon" href="{{ \App\Support\Media::url($site['logo'] ?? null) ?: asset('favicon.svg') }}">
     <link rel="preconnect" href="https://fonts.googleapis.com">

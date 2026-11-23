@@ -2,6 +2,10 @@
 
 @section('title', $project->title.' — '.($site['site_name'] ?? 'StepUp'))
 @section('description', $project->excerpt ?: ($site['meta_description'] ?? ''))
+@section('og_type', 'article')
+@if ($cover = \App\Support\Media::url($project->cover))
+    @section('og_image', $cover)
+@endif
 
 @section('content')
     @php

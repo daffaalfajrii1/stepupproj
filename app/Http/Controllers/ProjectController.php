@@ -55,6 +55,7 @@ class ProjectController extends Controller
             'X-Frame-Options' => 'SAMEORIGIN',
             'Content-Security-Policy' => "frame-ancestors 'self'",
             'Cache-Control' => 'private, max-age=120',
+            'X-Robots-Tag' => 'noindex, nofollow',
         ];
 
         if (str_contains($type, 'html') || $type === '') {
