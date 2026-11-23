@@ -41,15 +41,20 @@ if [[ ! -d "$PUBLIC_HTML" ]]; then
     exit 1
 fi
 
-mkdir -p "$PUBLIC_HTML/uploads"
-
-if [[ -L "$ROOT/public/uploads" ]]; then
-    rm -f "$ROOT/public/uploads"
-    mkdir -p "$ROOT/public/uploads"
+# public tidak boleh berupa tautan ke public_html, kalau tidak rsync menghapus dirinya sendiri.
+if [[ -L "$ROOT/public" ]]; then
+    rm -f "$ROOT/public"
+    git checkout -- public || true
+fi
+if [[ -f "$ROOT/public/artisan" ]]; then
+    echo "Folder public berisi aplikasi, bukan berkas situs. Sync dibatalkan." >&2
+    exit 1
 fi
 
+mkdir -p "$PUBLIC_HTML/uploads"
+
 if command -v rsync >/dev/null 2>&1; then
-    rsync -a --delete \
+    rsync -a \
         --exclude 'uploads/' \
         --exclude 'index.php.bak-deploy' \
         "$ROOT/public/" "$PUBLIC_HTML/"
@@ -57,12 +62,25 @@ else
     find "$ROOT/public" -mindepth 1 -maxdepth 1 ! -name uploads -exec cp -a {} "$PUBLIC_HTML/" \;
 fi
 
-# Unggahan admin disimpan di public_html/uploads.
-if [[ -d "$ROOT/public/uploads" && ! -L "$ROOT/public/uploads" ]]; then
-    cp -a "$ROOT/public/uploads/." "$PUBLIC_HTML/uploads/" 2>/dev/null || true
-    rm -rf "$ROOT/public/uploads"
+chmod 755 "$PUBLIC_HTML" "$PUBLIC_HTML/css" "$PUBLIC_HTML/js" 2>/dev/null || true
+chmod 644 "$PUBLIC_HTML/index.php" "$PUBLIC_HTML/.htaccess" 2>/dev/null || true
+
+if [[ ! -f "$PUBLIC_HTML/index.php" ]]; then
+    echo "public_html/index.php hilang. Situs akan 403." >&2
+    exit 1
 fi
-ln -sfn "$PUBLIC_HTML/uploads" "$ROOT/public/uploads"
+
+# Unggahan admin disimpan di public_html/uploads.
+# Jangan buat tautan kalau public sudah menunjuk ke public_html: itu membuat lingkaran.
+if [[ -L "$ROOT/public" ]]; then
+    mkdir -p "$PUBLIC_HTML/uploads"
+else
+    if [[ -d "$ROOT/public/uploads" && ! -L "$ROOT/public/uploads" ]]; then
+        cp -a "$ROOT/public/uploads/." "$PUBLIC_HTML/uploads/" 2>/dev/null || true
+        rm -rf "$ROOT/public/uploads"
+    fi
+    ln -sfn "$PUBLIC_HTML/uploads" "$ROOT/public/uploads"
+fi
 chmod -R ug+rwx "$ROOT/storage" "$ROOT/bootstrap/cache" "$PUBLIC_HTML/uploads" 2>/dev/null || true
 
 if ! grep -q "stepup/vendor/autoload.php" "$PUBLIC_HTML/index.php" 2>/dev/null; then

@@ -4,7 +4,7 @@ use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 
-return Application::configure(basePath: dirname(__DIR__))
+$app = Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
         web: __DIR__.'/../routes/web.php',
         commands: __DIR__.'/../routes/console.php',
@@ -20,3 +20,10 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withExceptions(function (Exceptions $exceptions) {
         //
     })->create();
+
+$webRoot = dirname(__DIR__, 2).DIRECTORY_SEPARATOR.'public_html';
+if (is_file($webRoot.DIRECTORY_SEPARATOR.'index.php')) {
+    $app->usePublicPath($webRoot);
+}
+
+return $app;
